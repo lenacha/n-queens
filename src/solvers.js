@@ -16,15 +16,77 @@
 
 
 window.findNRooksSolution = function(n) {
-  var solution = undefined; //fixme
+  var solution = undefined;
+  var count = 0;
 
+  var nextBoard = function(pos){
+    var row = Math.floor(pos/n);
+    var col = pos % n;
+    this.togglePiece(row, col);
+    count++;
+
+    if (this.hasAnyRowConflicts() || this.hasAnyColConflicts()){
+      this.togglePiece(row, col);
+      count--;
+      return;
+    } 
+
+    if (count === n) {
+      solution = this.rows();
+      return;
+    }
+    
+    for(let i = pos; i < (n * n - 1); i++){
+      if(count === n) {
+        return;
+      }
+      nextBoard.call(this, ++pos);
+    }
+
+  }
+  //start recursive algorithm with pos 0
+  nextBoard.call(new Board({n:n}), 0);
+
+  
   console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
   return solution;
 };
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
-  var solutionCount = undefined; //fixme
+  var solutionCount = 0; //fixme
+  var count = 0;
+  
+  var nextBoard = function(pos){
+    var row = Math.floor(pos/n);
+    var col = pos % n;
+    this.togglePiece(row, col);
+    count++;
+
+    if (this.hasAnyRowConflicts() || this.hasAnyColConflicts()){
+      this.togglePiece(row, col);
+      count--;
+      return;
+    } 
+
+    if (count === n) {
+      solutionCount++;
+      return;
+    }
+    
+    for(let i = pos; i < (n * n - 1); i++){
+      if(count === n) {
+        return;
+      }
+      nextBoard.call(this, ++pos);
+    }
+
+  }
+  //start recursive algorithm with pos 0
+  for(var i = 0; i < (n*n - n); i++ ) {
+    nextBoard.call(new Board({n:n}), i);
+  }
+  
 
   console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
   return solutionCount;

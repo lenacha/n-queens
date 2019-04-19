@@ -17,6 +17,7 @@
 
 window.findNRooksSolution = function(n) {
   var solution = undefined;
+  var colConf = {};
 
   var backtracker = function (row) {
     if (row === n) {
@@ -28,10 +29,11 @@ window.findNRooksSolution = function(n) {
       if(solution !== undefined) {
         return;
       }
-      this.togglePiece(row, col);
-      if ( this.hasAnyColConflicts() || this.hasAnyRowConflicts()) {
+      //this.togglePiece(row, col);
+      if (!colConf.hasOwnProperty(col)) {
+        //this.togglePiece(row, col);
         this.togglePiece(row, col);
-      } else {
+        colConf[col] = col;
         backtracker.call(this, ++row);
       }
     }
@@ -58,32 +60,23 @@ window.findNRooksSolution = function(n) {
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
   var solutionCount = 0; //fixme
-
+  var colConf = {};
   var backtrack = function(row){
-    // check if row === n
-      // if so, increment solutionCount
-      // return
     if(row === n) {
       solutionCount++;
       return;
     };
 
     for (var col = 0; col < n; col++) {
-      this.togglePiece(row, col)
-      if(this.hasAnyRooksConflicts()) {
-        this.togglePiece.call(this, row, col);
-      } else {
+      //this.togglePiece(row, col)
+      if(!colConf.hasOwnProperty(col)) {
+        this.togglePiece(row, col);
+        colConf[col] = col;
         backtrack.call(this, row + 1);
-        this.togglePiece.call(this, row, col);
+        delete colConf[col];
+        //this.togglePiece.call(this, row, col);
       }
     }
-    //iterate over columns
-      //toggle piece at row, column(from loop)
-      //check for conflicts
-        //is it has, untoggle piece
-      //else
-        //call backtrack with row incremented
-        //untoggle after recursive calls
   }
   backtrack.call(new Board({n:n}), 0);
   console.log('Number of solutions for ' + n + ' rooks:', solutionCount);
@@ -105,7 +98,7 @@ window.findNQueensSolution = function(n) {
 
     for (var col = 0; col < n; col++) {
       this.togglePiece(row, col)
-      if(this.hasAnyQueensConflicts()) {
+      if(this.hasColConflictAt(col) || this.hasMajorDiagonalConflictAt(col - row) || this.hasMinorDiagonalConflictAt(col + row)) {
         this.togglePiece.call(this, row, col);
 
         if (col === n-1) {
@@ -137,6 +130,7 @@ window.findNQueensSolution = function(n) {
 window.countNQueensSolutions = function(n) {
   var solutionCount = 0; //fixme
   var count = 0;
+  var colConf = {};
 
   if(n === 2 || n === 3) {
     return 0;
@@ -151,25 +145,21 @@ window.countNQueensSolutions = function(n) {
     };
 
     for (var col = 0; col < n; col++) {
-      //debugger;
-      this.togglePiece(row, col);
-      if(this.hasAnyQueensConflicts()) {
-        this.togglePiece.call(this, row, col);
-
-        if (col === n-1) {
+      if (!colConf.hasOwnProperty(col)){
+        this.togglePiece(row, col);
+        if(this.hasColConflictAt(col) || this.hasMajorDiagonalConflictAt(col - row) || this.hasMinorDiagonalConflictAt(col + row)) {
+          this.togglePiece.call(this, row, col);
+          if (col === n-1) {
+            backtrack.call(this, row + 1);
+          }
+        } else {
+          colConf[col] = col;
+          count++;
           backtrack.call(this, row + 1);
+          this.togglePiece.call(this, row, col);
+          delete colConf[col];
+          count--;
         }
-      } else {
-        // debugger;
-        count++;
-        backtrack.call(this, row + 1);
-
-        // if(count === n) {
-        //   return;
-        // }
-
-        this.togglePiece.call(this, row, col);
-        count--;
       }
     }
   }
